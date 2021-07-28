@@ -18,10 +18,10 @@ FROM_MAIL=
 # receivers (comma seperated values, list file or xlsx file)
 TO_MAIL=
 
-# subject as a string
+# subject as a string (has server test default)
 SUBJECT=
 
-# content as a filename or string
+# content as a filename or string (has server test default)
 HTML=
 */
 
@@ -54,12 +54,14 @@ const sender = async (content, to) => {
       pass: process.env.USERPASS,
     },
   })
-  let info = await transporter.sendMail({
+
+  await transporter.sendMail({
     from: `${process.env.FROM_NAME || 'MAILER'} <${process.env.FROM_MAIL}>`,
     to: to,
-    subject: process.env.SUBJECT,
-    html: content,
+    subject: process.env.SUBJECT || 'This is a Test Mail',
+    html: content || 'The given credentials are working correctly!',
   })
+
   console.log('Email sent to ' + to)
 }
 
@@ -111,17 +113,12 @@ const mailer = async (content, to, delay) => {
 }
 
 // operating function
-fs.readFile(
-  process.cwd() +
-    `/${process.env.HTML || 'The given credentials are working correctly!'}`,
-  'utf8',
-  (err, res) => {
-    if (err) {
-      // email as string
-      mailer(process.env.HTML, process.env.TO_MAIL, process.env.DELAY || 5000)
-    } else {
-      // email as html file
-      mailer(res, process.env.TO_MAIL, process.env.DELAY || 5000)
-    }
+fs.readFile(process.cwd() + `/${process.env.HTML}`, 'utf8', (err, res) => {
+  if (err) {
+    // email as string
+    mailer(process.env.HTML, process.env.TO_MAIL, process.env.DELAY || 5000)
+  } else {
+    // email as html file
+    mailer(res, process.env.TO_MAIL, process.env.DELAY || 5000)
   }
-)
+})

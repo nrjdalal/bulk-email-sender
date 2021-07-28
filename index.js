@@ -66,12 +66,13 @@ const mailer = async (content, to, delay) => {
   // email sender
   fs.readFile(process.cwd() + `/${to}`, 'utf8', (err, res) => {
     let index = 1
-
     if (err) {
       to = to.replace(/ /g, '')
       // to single email address
       if (isEmail(to)) {
         sender(content, to)
+      } else {
+        console.log('Invalid email address encountered')
       }
       // to comma separated emails
       if (to.includes(',')) {
@@ -107,6 +108,7 @@ const mailer = async (content, to, delay) => {
   })
 }
 
+// operating function
 fs.readFile(process.cwd() + `/${process.env.HTML}`, 'utf8', (err, res) => {
   if (err) {
     // email as string

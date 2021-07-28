@@ -1,5 +1,14 @@
 /*
 
+
+# transport information w/o defaults
+USERNAME=
+USERPASS=
+
+# sender information w/o defaults
+FROM_NAME=
+FROM_MAIL=
+
 # transport information with defaults (smtp.gmail.com, 465, true)
 HOST=
 PORT=
@@ -7,14 +16,6 @@ SECURE=
 
 # delay between emails in ms (default = 5000)
 DELAY=
-
-# transport information w/o defaults
-USERNAME=
-USERPASS=
-
-# sender information
-FROM_NAME=
-FROM_MAIL=
 
 # receivers (single address, comma seperated values, list file or xlsx file)
 TO_MAIL=
@@ -59,7 +60,7 @@ const sender = async (content, to) => {
 
   await transporter.sendMail({
     from: `${process.env.FROM_NAME} <${process.env.FROM_MAIL}>`,
-    to: to,
+    to: to || process.env.FROM_MAIL,
     subject: process.env.SUBJECT || 'This is a Test Mail',
     html: content || 'The given credentials are working correctly!',
   })

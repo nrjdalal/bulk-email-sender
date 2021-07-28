@@ -1,10 +1,15 @@
 /*
-# transport information
+# transport information with defaults (smtp.gmail.com, 465, true)
 HOST=
 PORT=
 SECURE=
+
+# transport information w/o defaults
 USERNAME=
 USERPASS=
+
+# delay between emails in ms (default = 5000)
+DELAY=
 
 # sender information
 FROM_NAME=
@@ -18,9 +23,6 @@ SUBJECT=
 
 # content as a filename or string
 HTML=
-
-# delay between emails in ms
-DELAY=
 */
 
 require('dotenv').config()
@@ -109,12 +111,17 @@ const mailer = async (content, to, delay) => {
 }
 
 // operating function
-fs.readFile(process.cwd() + `/${process.env.HTML}`, 'utf8', (err, res) => {
-  if (err) {
-    // email as string
-    mailer(process.env.HTML, process.env.TO_MAIL, process.env.DELAY || 5000)
-  } else {
-    // email as html file
-    mailer(res, process.env.TO_MAIL, process.env.DELAY || 5000)
+fs.readFile(
+  process.cwd() +
+    `/${process.env.HTML || 'The given credentials are working correctly!'}`,
+  'utf8',
+  (err, res) => {
+    if (err) {
+      // email as string
+      mailer(process.env.HTML, process.env.TO_MAIL, process.env.DELAY || 5000)
+    } else {
+      // email as html file
+      mailer(res, process.env.TO_MAIL, process.env.DELAY || 5000)
+    }
   }
-})
+)

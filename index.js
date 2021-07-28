@@ -79,8 +79,8 @@ const mailer = async (content, to, delay) => {
         sender(content, process.env.FROM_MAIL)
         return
       }
+      // to single email address
       if (isEmail(to)) {
-        // to single email address
         sender(content, to)
       } else {
         console.log('Invalid email address encountered')

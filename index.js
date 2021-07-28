@@ -1,6 +1,5 @@
 /*
 
-
 # transport information w/o defaults
 USERNAME=
 USERPASS=
@@ -31,6 +30,7 @@ HTML=
 require('dotenv').config()
 const fs = require('fs')
 const nodemailer = require('nodemailer')
+const { exit } = require('process')
 const validate = require('validate.js')
 
 // 1. helper utilities
@@ -60,7 +60,7 @@ const sender = async (content, to) => {
 
   await transporter.sendMail({
     from: `${process.env.FROM_NAME} <${process.env.FROM_MAIL}>`,
-    to: to || process.env.FROM_MAIL,
+    to: to,
     subject: process.env.SUBJECT || 'This is a Test Mail',
     html: content || 'The given credentials are working correctly!',
   })
@@ -75,8 +75,13 @@ const mailer = async (content, to, delay) => {
     let index = 1
     if (err) {
       to = to.replace(/ /g, '')
-      // to single email address
+      // if empty
+      if (to.length === 0) {
+        sender(content, process.env.FROM_MAIL)
+        return
+      }
       if (isEmail(to)) {
+        // to single email address
         sender(content, to)
       } else {
         console.log('Invalid email address encountered')

@@ -24,10 +24,24 @@ DELAY=
 */
 
 require('dotenv').config()
-const nodemailer = require('nodemailer')
 const fs = require('fs')
+const nodemailer = require('nodemailer')
 const validate = require('validate.js')
 
+// 1. helper utilities
+// 1.1 email validator
+const isEmail = (email) => {
+  const res = validate({ from: email }, { from: { email: true } })
+  if (res) {
+    return false
+  } else {
+    return true
+  }
+}
+// 1.2 delay timer
+const timer = (ms) => new Promise((res) => setTimeout(res, ms))
+
+// 2. nodemailer configuration
 const sender = async (content, to) => {
   let transporter = nodemailer.createTransport({
     host: process.env.HOST || 'smtp.gmail.com',
@@ -44,48 +58,47 @@ const sender = async (content, to) => {
     subject: process.env.SUBJECT,
     html: content,
   })
-  console.log('Message sent:', info.messageId)
+  console.log('Email sent to ' + to)
 }
 
-const emailList = async (content, toEmails, delay) => {
-  // email validator
-  const isEmail = (email) => {
-    const res = validate({ from: email }, { from: { email: true } })
-    if (res) {
-      return false
-    } else {
-      return true
-    }
-  }
-  // delay timer
-  const timer = (ms) => new Promise((res) => setTimeout(res, ms))
+// 3. mailer (one-by-one)
+const mailer = async (content, to, delay) => {
   // email sender
-  fs.readFile(process.cwd() + `/${toEmails}`, 'utf8', (err, res) => {
+  fs.readFile(process.cwd() + `/${to}`, 'utf8', (err, res) => {
+    let index = 1
+
     if (err) {
-      toEmails = toEmails.replace(/ /g, '')
-      // to single email
-      if (isEmail(toEmails)) {
-        sender(content, toEmails)
+      to = to.replace(/ /g, '')
+      // to single email address
+      if (isEmail(to)) {
+        sender(content, to)
       }
       // to comma separated emails
-      if (toEmails.includes(',')) {
+      if (to.includes(',')) {
         async function sendmail() {
-          for (x of toEmails.split(',')) {
+          for (x of to.split(',')) {
+            console.log(index++)
             if (isEmail(x)) {
               sender(content, x)
               await timer(delay)
+            } else {
+              console.log('Invalid email address encountered')
             }
           }
         }
         sendmail()
       }
     } else {
+      res = res.replace(/ /g, '')
       // list file
       async function sendmail() {
         for (x of res.split('\n')) {
+          console.log(index++)
           if (isEmail(x)) {
             sender(content, x)
             await timer(delay)
+          } else {
+            console.log('Invalid email address encountered')
           }
         }
       }
@@ -97,9 +110,9 @@ const emailList = async (content, toEmails, delay) => {
 fs.readFile(process.cwd() + `/${process.env.HTML}`, 'utf8', (err, res) => {
   if (err) {
     // email as string
-    emailList(process.env.HTML, process.env.TO_MAIL, 5000)
+    mailer(process.env.HTML, process.env.TO_MAIL, process.env.DELAY || 5000)
   } else {
     // email as html file
-    emailList(res, process.env.TO_MAIL, 5000)
+    mailer(res, process.env.TO_MAIL, process.env.DELAY || 5000)
   }
 })

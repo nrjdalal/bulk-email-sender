@@ -1,21 +1,22 @@
 /*
+
 # transport information with defaults (smtp.gmail.com, 465, true)
 HOST=
 PORT=
 SECURE=
 
+# delay between emails in ms (default = 5000)
+DELAY=
+
 # transport information w/o defaults
 USERNAME=
 USERPASS=
-
-# delay between emails in ms (default = 5000)
-DELAY=
 
 # sender information
 FROM_NAME=
 FROM_MAIL=
 
-# receivers (comma seperated values, list file or xlsx file)
+# receivers (single address, comma seperated values, list file or xlsx file)
 TO_MAIL=
 
 # subject as a string (has server test default)
@@ -23,6 +24,7 @@ SUBJECT=
 
 # content as a filename or string (has server test default)
 HTML=
+
 */
 
 require('dotenv').config()
@@ -56,7 +58,7 @@ const sender = async (content, to) => {
   })
 
   await transporter.sendMail({
-    from: `${process.env.FROM_NAME || 'MAILER'} <${process.env.FROM_MAIL}>`,
+    from: `${process.env.FROM_NAME} <${process.env.FROM_MAIL}>`,
     to: to,
     subject: process.env.SUBJECT || 'This is a Test Mail',
     html: content || 'The given credentials are working correctly!',

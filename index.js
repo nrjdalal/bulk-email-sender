@@ -30,7 +30,6 @@ HTML=
 require('dotenv').config()
 const fs = require('fs')
 const nodemailer = require('nodemailer')
-const { exit } = require('process')
 const validate = require('validate.js')
 
 // 1. helper utilities

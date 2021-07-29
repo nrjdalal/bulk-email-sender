@@ -31,6 +31,7 @@ require('dotenv').config()
 const fs = require('fs')
 const nodemailer = require('nodemailer')
 const validate = require('validate.js')
+const xlsx = require('xlsx')
 
 // 1. helper utilities
 // 1.1 email validator
@@ -83,7 +84,7 @@ const mailer = async (content, to, delay) => {
       if (isEmail(to)) {
         sender(content, to)
       } else {
-        console.log('Invalid email address encountered')
+        console.log('Invalid email address encountered - ' + x)
       }
       // to comma separated emails
       if (to.includes(',')) {
@@ -94,27 +95,47 @@ const mailer = async (content, to, delay) => {
               sender(content, x)
               await timer(delay)
             } else {
-              console.log('Invalid email address encountered')
+              console.log('Invalid email address encountered - ' + x)
             }
           }
         }
         sendmail()
       }
     } else {
-      res = res.replace(/ /g, '')
-      // list file
-      async function sendmail() {
-        for (x of res.split('\n')) {
-          console.log(index++)
-          if (isEmail(x)) {
-            sender(content, x)
-            await timer(delay)
-          } else {
-            console.log('Invalid email address encountered')
+      if (to.includes('xlsx')) {
+        let workbook = xlsx.readFile(to)
+        for (sheet of workbook.SheetNames) {
+          let worksheet = workbook.Sheets[sheet]
+          async function sendmail() {
+            for (x of Object.keys(worksheet)) {
+              console.log(index++)
+              res = worksheet[x].v.replace(/ /g, '')
+              if (isEmail(res)) {
+                sender(content, res)
+                await timer(delay)
+              } else {
+                console.log('Invalid email address encountered - ' + x)
+              }
+            }
+          }
+          sendmail()
+        }
+      } else {
+        res = res.replace(/ /g, '')
+        // list file
+        async function sendmail() {
+          for (x of res.split('\n')) {
+            console.log(index++)
+            if (isEmail(x)) {
+              sender(content, x)
+              await timer(delay)
+            } else {
+              console.log('Invalid email address encountered - ' + x)
+            }
           }
         }
+        sendmail()
       }
-      sendmail()
     }
   })
 }

@@ -83,8 +83,6 @@ const mailer = async (content, to, delay) => {
       // to single email address
       if (isEmail(to)) {
         sender(content, to)
-      } else {
-        console.log('Invalid email address encountered - ' + x)
       }
       // to comma separated emails
       if (to.includes(',')) {
@@ -109,12 +107,14 @@ const mailer = async (content, to, delay) => {
           async function sendmail() {
             for (x of Object.keys(worksheet)) {
               console.log(index++)
-              res = worksheet[x].v.replace(/ /g, '')
-              if (isEmail(res)) {
-                sender(content, res)
-                await timer(delay)
-              } else {
-                console.log('Invalid email address encountered - ' + x)
+              if (typeof worksheet[x].v !== 'undefined') {
+                res = worksheet[x].v.replace(/ /g, '')
+                if (isEmail(res)) {
+                  sender(content, res)
+                  await timer(delay)
+                } else {
+                  console.log('Invalid email address encountered - ' + x)
+                }
               }
             }
           }
@@ -130,7 +130,7 @@ const mailer = async (content, to, delay) => {
               sender(content, x)
               await timer(delay)
             } else {
-              console.log('Invalid email address encountered - ' + x)
+              console.log('Invalid email address encountered - ')
             }
           }
         }
